@@ -1,0 +1,2488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Fire Risk Assessment</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <style>
+    :root {
+      --bg: #fff5f5;
+      --card: #ffffff;
+      --ink: #7f1d1d;
+      --muted: #991b1b;
+      --brand: #dc2626;
+      --border: #fecaca;
+      --danger: #b91c1c;
+      --ok: #ea580c;
+      --warn: #f97316;
+      --chip: #fee2e2;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * { 
+      box-sizing: border-box; 
+    }
+
+    html, body { 
+      height: 100%; 
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* Header Styles */
+    header {
+      position: sticky; 
+      top: 0; 
+      z-index: 50;
+      background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+      color: white;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-content h1 { 
+      margin: 0; 
+      font-size: 24px; 
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .header-content p { 
+      margin: 8px 0 0 0; 
+      color: rgba(255,255,255,0.9); 
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .trial-countdown {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .trial-countdown.warning {
+      background: rgba(255, 200, 0, 0.3);
+    }
+
+    .trial-countdown.expired {
+      background: rgba(255, 0, 0, 0.3);
+    }
+
+    /* Loading Indicator */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      color: white;
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Auto-save indicator */
+    .save-status {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: var(--ok);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .save-status.saving {
+      background: var(--warn);
+      opacity: 1;
+    }
+
+    .save-status.saved {
+      background: var(--ok);
+      opacity: 1;
+    }
+
+    .save-status.error {
+      background: var(--danger);
+      opacity: 1;
+    }
+
+    /* Main Content */
+    main { 
+      padding: 24px; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Grid Layouts - Enhanced Mobile Responsiveness */
+    .grid-2 {
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 16px; 
+    }
+
+    @media (min-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      main { padding: 32px; }
+    }
+
+    @media (min-width: 1024px) {
+      .grid-2 { gap: 20px; }
+    }
+
+    /* Form Elements - Enhanced Mobile */
+    label.block {
+      display: block; 
+      font-weight: 600; 
+      margin: 0 0 6px; 
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .hint { 
+      color: var(--muted); 
+      font-size: 13px; 
+      margin-top: 4px; 
+      line-height: 1.4;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%; 
+      padding: 14px 16px; /* Increased for better touch targets */
+      border: 2px solid var(--border); 
+      border-radius: 12px; 
+      font-size: 16px; /* Prevents zoom on iOS */
+      background: var(--card);
+      transition: all 0.2s ease;
+      font-family: inherit;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    textarea { 
+      min-height: 120px; 
+      resize: vertical; 
+    }
+
+    /* Error states */
+    input.error,
+    select.error,
+    textarea.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+    }
+
+    .error-message {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Action Item Styles */
+    fieldset.action-item {
+      border: 2px solid var(--border);
+      background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    fieldset.action-item:hover {
+      border-color: var(--brand);
+      box-shadow: var(--shadow);
+    }
+
+    fieldset.action-item legend {
+      font-weight: 700;
+      padding: 0 12px;
+      color: var(--brand);
+      font-size: 16px;
+    }
+
+    /* Image Handling - Enhanced Mobile */
+    .image-input {
+      width: 100%; 
+      padding: 16px; /* Increased for better touch */
+      border: 2px dashed var(--border); 
+      border-radius: 12px; 
+      background: var(--card);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 16px;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-input:hover {
+      border-color: var(--brand);
+      background: var(--chip);
+    }
+
+    .image-grid {
+      margin-top: 12px; 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Smaller for mobile */
+      gap: 12px; 
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .trial-countdown {
+        align-self: flex-end;
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+
+      .image-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 8px; 
+      }
+      .image-input {
+        font-size: 18px;
+        padding: 20px;
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .image-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .thumb {
+      position: relative; 
+      border: 2px solid var(--border); 
+      border-radius: 12px; 
+      overflow: hidden; 
+      background: var(--card);
+      aspect-ratio: 4/3;
+      transition: transform 0.2s ease;
+    }
+
+    .thumb:hover {
+      transform: scale(1.05);
+    }
+
+    .thumb img { 
+      display: block; 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+    }
+
+    .remove-img { 
+      position: absolute; 
+      top: 8px; 
+      right: 8px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white; 
+      border: 0; 
+      border-radius: 50%; 
+      width: 32px; /* Larger for touch */
+      height: 32px; /* Larger for touch */
+      cursor: pointer; 
+      font-size: 18px; 
+      font-weight: 600;
+      line-height: 32px;
+      transition: all 0.2s ease;
+      min-width: 32px;
+      min-height: 32px;
+    }
+
+    @media (max-width: 640px) {
+      .remove-img {
+        width: 36px;
+        height: 36px;
+        line-height: 36px;
+        font-size: 20px;
+      }
+    }
+
+    .remove-img:hover {
+      background: var(--danger);
+      transform: scale(1.1);
+    }
+
+    /* Toolbar - Enhanced Mobile */
+    .toolbar {
+      position: sticky; 
+      bottom: 0; 
+      z-index: 40;
+      background: var(--card);
+      border-top: 2px solid var(--border);
+      padding: 16px 24px;
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 8px; /* Smaller gap for mobile */
+      box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    @media (max-width: 640px) {
+      .toolbar {
+        padding: 12px 16px;
+        gap: 6px;
+        justify-content: space-between;
+      }
+    }
+
+    /* Button Styles - Enhanced Mobile Touch */
+    button, .file-btn {
+      appearance: none; 
+      border: 2px solid var(--border);
+      background: var(--card);
+      color: var(--ink);
+      padding: 14px 20px; /* Increased for touch */
+      border-radius: 12px; 
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px; /* Accessibility standard */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (max-width: 640px) {
+      button, .file-btn {
+        padding: 16px 12px;
+        font-size: 13px;
+        min-height: 52px;
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    button:hover, .file-btn:hover {
+      background: var(--bg);
+      border-color: var(--brand);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    button.primary { 
+      background: var(--brand); 
+      color: white; 
+      border-color: var(--brand); 
+    }
+
+    button.primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    button.ghost { 
+      background: var(--bg); 
+      border-color: var(--border);
+    }
+
+    button.danger { 
+      color: white; 
+      background: var(--danger); 
+      border-color: var(--danger); 
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    button.ok { 
+      color: white; 
+      background: var(--ok); 
+      border-color: var(--ok); 
+    }
+
+    button.ok:hover {
+      background: #059669;
+    }
+
+    button.warn { 
+      color: white; 
+      background: var(--warn); 
+      border-color: var(--warn); 
+    }
+
+    /* Loading state for buttons */
+    button.loading {
+      position: relative;
+      color: transparent;
+      pointer-events: none;
+    }
+
+    button.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Priority Colors */
+    select.priority { font-weight: 600; }
+    select.priority[data-level="N/A"] { color: var(--ink); }
+    select.priority[data-level="Low"] { color: var(--ok); }
+    select.priority[data-level="Medium"] { color: var(--warn); }
+    select.priority[data-level="High"] { color: var(--danger); }
+
+    .priority-row {
+      display: flex; 
+      gap: 12px; 
+      align-items: center; 
+      flex-wrap: wrap; 
+    }
+
+    /* Areas UI */
+    .area-controls {
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+      align-items: center;
+      margin-bottom: 12px; 
+    }
+
+    @media (max-width: 640px) {
+      .area-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .areas-list {
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      min-height: 36px;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px;
+      padding: 8px 12px; 
+      border-radius: 20px; 
+      background: var(--chip); 
+      border: 2px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--brand);
+      transform: translateY(-1px);
+    }
+
+    .chip button {
+      border: 0; 
+      background: transparent; 
+      color: var(--muted); 
+      cursor: pointer; 
+      font-size: 18px;
+      line-height: 1; 
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .chip button:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .area-options { 
+      margin-top: 16px; 
+      display: flex; 
+      gap: 16px; 
+      align-items: center; 
+      flex-wrap: wrap; 
+    }
+
+    .area-divider, .hazard-divider {
+      margin: 24px 0 16px;
+      padding: 12px 16px; 
+      border-radius: 12px; 
+      font-weight: 700; 
+      color: white;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .area-divider {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--warn) 100%);
+      border-left: 4px solid var(--brand);
+    }
+
+    .hazard-divider {
+      background: linear-gradient(135deg, var(--danger) 0%, var(--warn) 100%);
+      border-left: 4px solid var(--danger);
+    }
+
+    .area-divider:hover, .hazard-divider:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .collapse-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .collapse-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .collapsible-section {
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .collapsible-section.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Action Rows */
+    .actions-row { 
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      margin-top: 16px; 
+    }
+
+    @media (max-width: 640px) {
+      .actions-row {
+        gap: 6px;
+      }
+      .actions-row button {
+        flex: 1;
+        min-height: 44px;
+      }
+    }
+
+    /* Area Card Styles */
+    .area-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .area-card:hover {
+      border-color: var(--brand);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .area-card.collapsed .area-card-content {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    .area-card-header {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--warn) 100%);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      .area-card-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+    }
+
+    .area-title-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .area-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .area-toggle-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: block;
+      min-height: 36px;
+    }
+
+    .area-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .area-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .area-actions {
+        justify-content: center;
+      }
+    }
+
+    .area-actions button {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .area-actions button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .area-card-content {
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 640px) {
+      .area-card-content {
+        padding: 16px;
+      }
+    }
+
+    .findings-container {
+      margin-bottom: 16px;
+    }
+
+    .area-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .area-card-footer {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    .add-area-section {
+      background: var(--card);
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .add-area-section:hover {
+      border-color: var(--brand);
+      background: var(--bg);
+    }
+
+    .add-area-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 640px) {
+      .add-area-controls {
+        flex-direction: column;
+        max-width: 100%;
+      }
+    }
+
+    .add-area-controls input {
+      flex: 1;
+    }
+
+    .add-area-controls button {
+      white-space: nowrap;
+    }
+
+    /* Adjust action item styles when inside area cards */
+    .area-card .action-item {
+      border: 2px solid var(--border);
+      background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+    }
+
+    /* Tips Section */
+    .tips-card {
+      background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+      border: 2px solid #fbbf24;
+    }
+
+    .tips-card strong {
+      color: #92400e;
+      font-size: 16px;
+    }
+
+    .tips-card ul {
+      margin: 12px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .tips-card li {
+      margin-bottom: 8px;
+      color: #78350f;
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+    }
+
+    @media (max-width: 640px) {
+      .modal-content {
+        width: 95%;
+        margin: 20px;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+      min-width: 30px;
+      min-height: 30px;
+    }
+
+    .modal-close:hover {
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-body p {
+      margin: 0 0 16px 0;
+      color: var(--muted);
+    }
+
+    .print-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .print-option {
+      cursor: pointer;
+      display: block;
+    }
+
+    .print-option input[type="radio"] {
+      display: none;
+    }
+
+    .print-option input[type="radio"]:checked + .option-card {
+      border-color: var(--brand);
+      background: var(--chip);
+    }
+
+    .option-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .option-card:hover {
+      border-color: var(--brand);
+      background: var(--bg);
+    }
+
+    .option-icon {
+      font-size: 24px;
+    }
+
+    .option-card strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .option-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    @media (max-width: 640px) {
+      .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .modal-footer button {
+        width: 100%;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      header, .toolbar, .no-print, .save-status, .modal { display: none !important; }
+      main { padding: 0; }
+      body { background: white; }
+      .card { 
+        border: 0; 
+        box-shadow: none; 
+        padding: 0; 
+        margin: 0 0 12mm 0; 
+        break-inside: avoid;
+      }
+      fieldset.action-item { 
+        border: 1px solid #ddd; 
+        background: white; 
+        margin-bottom: 8mm;
+      }
+      .image-grid { grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+      .thumb img { aspect-ratio: auto; height: auto; }
+      .page-break { page-break-before: always; }
+    }
+
+    
+  </style>
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>🔥 Fire Risk Assessment</h1>
+    </div>
+    <div class="trial-countdown" id="trialCountdown">
+      Loading...
+    </div>
+  </header>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div>
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+  </div>
+
+  <div class="save-status" id="saveStatus">
+    <span id="saveStatusText">Saving...</span>
+  </div>
+
+  <main>
+    <!-- Survey Meta -->
+    <section class="card">
+      <div class="grid-2">
+        <div>
+          <label class="block" for="site">🏢 Site Name</label>
+          <input id="site" name="site" type="text" placeholder="Enter site name" />
+          <div class="error-message" id="siteError">Please enter a site name</div>
+        </div>
+        <div>
+          <label class="block" for="date">📅 Survey Date</label>
+          <input id="date" name="date" type="date" />
+          <div class="error-message" id="dateError">Please select a survey date</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hazard Tag Management -->
+    <section class="card" id="hazardTagsCard">
+      <label class="block">⚠️ Hazard Tag</label>
+      <div class="area-controls">
+        <input id="hazardTagInput" type="text" placeholder="e.g., Compartmentation, Fire Doors, Electrical" style="flex: 1; min-width: 200px;" />
+        <div class="error-message" id="hazardTagError">This hazard tag already exists</div>
+        <button type="button" id="addHazardTagBtn" class="primary">➕ Add Hazard Tag</button>
+      </div>
+      <div id="hazardTagsList" class="areas-list hint">No hazard tags yet. Add some above to categorize risks.</div>
+    </section>
+
+    <!-- Areas Container -->
+    <div id="areasContainer">
+      <!-- Area cards will be dynamically added here -->
+    </div>
+
+    <!-- Add New Area Section -->
+    <div class="add-area-section">
+      <div class="add-area-controls">
+        <input id="newAreaInput" type="text" placeholder="Enter area name (e.g., Lobby, Room 101, Plant Room)" style="flex: 1; min-width: 200px;" />
+        <div class="error-message" id="areaError">This area already exists</div>
+        <button type="button" id="addNewAreaBtn" class="primary">
+          ➕ Add Area
+        </button>
+      </div>
+    </div>
+
+    <!-- Initial Area Input (hidden by default) -->
+    <div id="initialAreaInput" class="card" style="display: none;">
+      <label class="block">🚪 Create First Area</label>
+      <div class="area-controls">
+        <input id="firstAreaInput" type="text" placeholder="e.g., Lobby, Room 101, Plant Room" style="flex: 1; min-width: 200px;" />
+        <button type="button" id="createFirstAreaBtn" class="primary">Create Area</button>
+      </div>
+    </div>
+
+    <section class="card tips-card no-print">
+      <strong>💡 Fire Assessment Tips:</strong>
+      <ul>
+        <li>📱 On mobile device, tap "Images" to use your camera</li>
+        <li>💾 Everything auto-saves as you complete fields</li>
+        <li>📄 When finished, use "Print / Save as PDF" and select either Area or Hazard order</li>
+        <li>🔄 Drag findings up/down</li>
+        <li>🎨 Risk levels are colour-coded for visual reference</li>
+        <li>⚠️ Use hazard tags to categorise fire risks</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Bottom toolbar -->
+  <div class="toolbar">
+    <button type="button" id="saveDraftBtn" title="Download a .json file with your data">💾 Save Draft (.json)</button>
+
+    <label class="file-btn" title="Load a previously saved draft">
+      📁 Load Draft
+      <input type="file" id="loadDraftInput" accept="application/json" hidden>
+    </label>
+
+    <button type="button" id="printBtn" class="ok">🖨️ Print / Save as PDF</button>
+    <button type="button" id="clearAllBtn" class="danger" title="Clear all data and start fresh">🗑️ Clear All</button>
+  </div>
+
+  <!-- Print Options Dialog -->
+  <div id="printDialog" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🖨️ Print Options</h3>
+        <button class="modal-close" id="closePrintDialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Choose how you'd like to organize your findings in the PDF:</p>
+        <div class="print-options">
+          <label class="print-option">
+            <input type="radio" name="printGrouping" value="area" checked>
+            <div class="option-card">
+              <span class="option-icon">🚪</span>
+              <div>
+                <strong>Group by Area</strong>
+                <p>Organize findings by physical location/room</p>
+              </div>
+            </div>
+          </label>
+          <label class="print-option">
+            <input type="radio" name="printGrouping" value="hazard">
+            <div class="option-card">
+              <span class="option-icon">⚠️</span>
+              <div>
+                <strong>Group by Hazard</strong>
+                <p>Organize findings by hazard type</p>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="cancelPrint" class="ghost">Cancel</button>
+        <button type="button" id="confirmPrint" class="primary">🖨️ Print PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template for Area Card -->
+  <template id="areaCardTemplate">
+    <div class="area-card">
+      <div class="area-card-header">
+        <div class="area-title-section">
+          <h3 class="area-title">🚪 <span class="area-name"></span></h3>
+          <button type="button" class="area-toggle-btn" title="Toggle area">
+            ▲
+          </button>
+        </div>
+        <div class="area-actions">
+          <button type="button" class="ghost remove-area-btn" title="Remove area">
+            🗑️ Remove Area
+          </button>
+        </div>
+      </div>
+      
+      <div class="area-card-content">
+        <div class="findings-container">
+          <!-- Significant Findings will be added here -->
+        </div>
+        
+        <div class="area-card-footer">
+          <button type="button" class="primary add-finding-to-area-btn">
+            ➕ Add Significant Finding
+          </button>
+          <button type="button" class="ghost collapse-area-btn">
+            ▲ Collapse Area
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for each Significant Finding -->
+  <template id="actionItemTemplate">
+    <fieldset class="action-item">
+      <legend>🔥 Significant Finding <span class="action-number"></span></legend>
+
+      <div class="grid-2">
+        <div>
+          <label class="block">⚠️ Hazard Tag</label>
+          <select name="hazardTag" class="hazard-tag-select">
+            <option value="">Unassigned</option>
+          </select>
+        </div>
+        <div>
+          <label class="block">📍 Specific Location</label>
+          <input type="text" name="location" placeholder="Where specifically is this?" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label class="block">🚨 Risk Level</label>
+          <select class="priority" name="priority">
+            <option value="N/A">N/A</option>
+            <option value="Low">🟢 Low</option>
+            <option value="Medium">🟡 Medium</option>
+            <option value="High">🔴 High</option>
+          </select>
+        </div>
+        <div>
+          <!-- Empty cell for balanced layout -->
+        </div>
+      </div>
+
+      <label class="block">📝 Fire Hazard Observed</label>
+      <textarea name="finding" placeholder="Describe the fire hazard identified..."></textarea>
+
+      <label class="block">⚡ Suggested Actions</label>
+      <textarea name="actions" placeholder="What actions are recommended to reduce or eliminate this risk?"></textarea>
+
+      
+
+      <label class="block">📸 Images</label>
+      <input class="image-input" type="file" accept="image/*" capture="environment" multiple />
+      <div class="hint">💡 Tip: Choose "Take Photo" to capture with your camera. Add multiple images as needed.</div>
+      <div class="image-grid"></div>
+
+      <div class="actions-row">
+        <button type="button" class="ghost move-up">⬆️ Move Up</button>
+        <button type="button" class="ghost move-down">⬇️ Move Down</button>
+        <button type="button" class="danger removeActionBtn">🗑️ Remove</button>
+      </div>
+    </fieldset>
+  </template>
+
+  <!-- Modular JavaScript -->
+  <script type="module">
+    // Fire Risk Assessment Application - Modular Structure
+    // ================================================
+
+    // Utility Module
+    // ==============
+    const Utils = {
+      escapeHtml(s) {
+        return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      },
+
+      async showLoading(text = 'Processing...') {
+        try {
+          const overlay = document.getElementById('loadingOverlay');
+          const loadingText = document.getElementById('loadingText');
+          loadingText.textContent = text;
+          overlay.classList.add('active');
+          return overlay;
+        } catch (error) {
+          console.error('Failed to show loading:', error);
+        }
+      },
+
+      hideLoading() {
+        try {
+          const overlay = document.getElementById('loadingOverlay');
+          overlay.classList.remove('active');
+        } catch (error) {
+          console.error('Failed to hide loading:', error);
+        }
+      },
+
+      showError(message, elementId = null) {
+        try {
+          console.error('Error:', message);
+          
+          // Show error in save status
+          const statusEl = document.getElementById('saveStatus');
+          const textEl = document.getElementById('saveStatusText');
+          statusEl.className = 'save-status error';
+          textEl.textContent = message;
+
+          // Show field-specific error if elementId provided
+          if (elementId) {
+            const errorEl = document.getElementById(elementId);
+            const inputEl = errorEl.previousElementSibling;
+            if (inputEl) {
+              inputEl.classList.add('error');
+              errorEl.classList.add('show');
+              
+              // Hide error after 5 seconds
+              setTimeout(() => {
+                inputEl.classList.remove('error');
+                errorEl.classList.remove('show');
+              }, 5000);
+            }
+          }
+
+          // Hide general error after 5 seconds
+          setTimeout(() => {
+            if (statusEl.className.includes('error')) {
+              statusEl.className = 'save-status';
+            }
+          }, 5000);
+        } catch (error) {
+          console.error('Failed to show error message:', error);
+          alert(message); // Fallback to alert
+        }
+      }
+    };
+
+    // Storage Module
+    // ==============
+    const Storage = {
+      STORAGE_KEY: 'fireRiskAssessmentAutoSave',
+      AUTOSAVE_DELAY: 1000,
+
+      save(data) {
+        try {
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+          return true;
+        } catch (error) {
+          console.error('Storage save failed:', error);
+          return false;
+        }
+      },
+
+      load() {
+        try {
+          const data = localStorage.getItem(this.STORAGE_KEY);
+          return data ? JSON.parse(data) : null;
+        } catch (error) {
+          console.error('Storage load failed:', error);
+          return null;
+        }
+      },
+
+      clear() {
+        try {
+          localStorage.removeItem(this.STORAGE_KEY);
+          localStorage.clear();
+          return true;
+        } catch (error) {
+          console.error('Storage clear failed:', error);
+          return false;
+        }
+      }
+    };
+
+    // Image Processing Module
+    // ======================
+    const ImageProcessor = {
+      async fileToImage(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = reader.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      },
+
+      fitWithin(w, h, maxW, maxH) {
+        const r = Math.min(maxW / w, maxH / h, 1);
+        return { width: Math.round(w * r), height: Math.round(h * r) };
+      },
+
+      async checkWebPSupport() {
+        return new Promise((resolve) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1;
+          canvas.height = 1;
+          const webpData = canvas.toDataURL('image/webp');
+          resolve(webpData.indexOf('data:image/webp') === 0);
+        });
+      },
+
+      readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      },
+
+      async readAndCompressImage(file, maxW = 1200, maxH = 1200, quality = 0.8) {
+        try {
+          // Support WebP with fallback to JPEG
+          const supportsWebP = await this.checkWebPSupport();
+          
+          const img = await this.fileToImage(file);
+          const size = this.fitWithin(img.width, img.height, maxW, maxH);
+          const canvas = document.createElement('canvas');
+          canvas.width = size.width;
+          canvas.height = size.height;
+          const ctx = canvas.getContext('2d');
+          
+          // Enable better image quality
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, size.width, size.height);
+          
+          // Try WebP first, fallback to JPEG
+          if (supportsWebP) {
+            return canvas.toDataURL('image/webp', quality);
+          }
+          return canvas.toDataURL('image/jpeg', Math.min(quality, 0.85));
+        } catch (error) {
+          console.error('Image compression failed:', error);
+          // Fallback to original file reading
+          return await this.readFileAsDataURL(file);
+        }
+      }
+    };
+
+    // Validation Module
+    // =================
+    const Validation = {
+      validateInput(value, existingItems, fieldName) {
+        const trimmed = value.trim();
+        
+        if (!trimmed) {
+          return {
+            isValid: false,
+            error: `Please enter a ${fieldName}`
+          };
+        }
+
+        if (existingItems.includes(trimmed)) {
+          return {
+            isValid: false,
+            error: `This ${fieldName} already exists`
+          };
+        }
+
+        return {
+          isValid: true,
+          error: null
+        };
+      },
+
+      clearFieldError(inputId) {
+        try {
+          const inputEl = document.getElementById(inputId);
+          const errorEl = document.getElementById(inputId + 'Error');
+          if (inputEl && errorEl) {
+            inputEl.classList.remove('error');
+            errorEl.classList.remove('show');
+          }
+        } catch (error) {
+          console.error('Failed to clear field error:', error);
+        }
+      }
+    };
+
+    // UI State Module
+    // ===============
+    const UIState = {
+      showSaveStatus(status, text) {
+        try {
+          const statusEl = document.getElementById('saveStatus');
+          const textEl = document.getElementById('saveStatusText');
+          
+          statusEl.className = 'save-status ' + status;
+          textEl.textContent = text;
+          
+          if (status === 'saved') {
+            setTimeout(() => {
+              statusEl.className = 'save-status';
+            }, 2000);
+          }
+        } catch (error) {
+          console.error('Failed to show save status:', error);
+        }
+      },
+
+      setButtonLoading(buttonId, isLoading) {
+        try {
+          const button = document.getElementById(buttonId);
+          if (!button) return;
+
+          if (isLoading) {
+            button.classList.add('loading');
+            button.disabled = true;
+          } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+          }
+        } catch (error) {
+          console.error('Failed to set button loading state:', error);
+        }
+      },
+
+      addImageThumb(container, dataUrl) {
+        try {
+          const d = document.createElement('div');
+          d.className = 'thumb';
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.alt = 'Photo';
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'remove-img';
+          btn.textContent = '×';
+          btn.title = 'Remove image';
+          btn.addEventListener('click', () => {
+            d.remove();
+            App.autoSave();
+          });
+          d.appendChild(img);
+          d.appendChild(btn);
+          container.appendChild(d);
+        } catch (error) {
+          console.error('Failed to add image thumb:', error);
+        }
+      }
+    };
+
+    // Data Management Module
+    // ======================
+    const DataManager = {
+      areas: [],
+      hazardTags: [],
+      autoSaveTimer: null,
+      areaCounter: 0,
+
+      serializeForm() {
+        try {
+          const meta = {
+            site: document.getElementById('site').value,
+            date: document.getElementById('date').value,
+            areas: this.areas,
+            hazardTags: this.hazardTags,
+          };
+          const actionsArr = [];
+          const areaCards = document.querySelectorAll('.area-card');
+          
+          areaCards.forEach(areaCard => {
+            const areaName = areaCard.dataset.areaName;
+            const findings = areaCard.querySelectorAll('.action-item');
+            
+            findings.forEach(fs => {
+              actionsArr.push({
+                area: areaName,
+                hazardTag: fs.querySelector('.hazard-tag-select')?.value,
+                location: fs.querySelector('[name="location"]').value,
+                finding: fs.querySelector('[name="finding"]').value,
+                actions: fs.querySelector('[name="actions"]').value,
+                priority: fs.querySelector('[name="priority"]').value,
+                images: [...fs.querySelectorAll('.image-grid img')].map((img) => img.src),
+              });
+            });
+          });
+          
+          return { meta, actions: actionsArr, exportedAt: new Date().toISOString() };
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      deserializeForm(data) {
+        try {
+          if (!data) return;
+
+          document.getElementById('site').value = data.meta.site;
+          document.getElementById('date').value = data.meta.date || new Date().toISOString().slice(0,10);
+          this.areas = data.meta.areas;
+          this.hazardTags = data.meta.hazardTags;
+            
+            App.renderHazardTagsList();
+
+            // Clear existing areas
+            document.getElementById('areasContainer').innerHTML = '';
+            
+            // Group actions by area
+            const actionsByArea = {};
+            data.actions.forEach(action => {
+              const area = action.area;
+              if (!actionsByArea[area]) {
+                actionsByArea[area] = [];
+              }
+              actionsByArea[area].push(action);
+            });
+
+            // Create area cards and add findings
+            Object.keys(actionsByArea).forEach(areaName => {
+              const areaCard = App.createAreaCard(areaName);
+              const findings = actionsByArea[areaName];
+              
+              findings.forEach(finding => {
+                App.addFindingToArea(areaCard);
+                const findingsContainer = areaCard.querySelector('.findings-container');
+                const lastFinding = findingsContainer.lastElementChild;
+                
+                // Populate the finding data
+                if (finding.hazardTag) lastFinding.querySelector('.hazard-tag-select').value = finding.hazardTag;
+                if (finding.location) lastFinding.querySelector('[name="location"]').value = finding.location;
+                if (finding.finding) lastFinding.querySelector('[name="finding"]').value = finding.finding;
+                if (finding.actions) lastFinding.querySelector('[name="actions"]').value = finding.actions;
+                if (finding.priority) {
+                  const prioritySel = lastFinding.querySelector('.priority');
+                  prioritySel.value = finding.priority;
+                  App.setPriorityColor(prioritySel);
+                }
+                
+                // Add images
+                if (finding.images && finding.images.length > 0) {
+                  const imageGrid = lastFinding.querySelector('.image-grid');
+                  finding.images.forEach(url => UIState.addImageThumb(imageGrid, url));
+                }
+              });
+            });
+
+            App.updateAddNewAreaButton();
+            
+            // Initialize toggle arrows to expanded state (▲)
+            document.querySelectorAll('.area-toggle-btn').forEach(btn => {
+              btn.textContent = '▲';
+              btn.title = 'Collapse area';
+            });
+        } catch (error) {
+          console.error('Failed to deserialize form:', error);
+          Utils.showError('Failed to load data');
+        }
+      },
+
+      download(filename, text, type = 'application/json') {
+        try {
+          const blob = new Blob([text], { type });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 500);
+        } catch (error) {
+          console.error('Download failed:', error);
+          Utils.showError('Failed to download file');
+        }
+      }
+    };
+
+    // Main Application Module
+    // ======================
+    // ============================================
+    // TRIAL MANAGER
+    // ============================================
+    const TrialManager = {
+      TRIAL_DAYS: 60,
+      STORAGE_KEY: 'fireRiskAssessment_trialStart',
+
+      init() {
+        this.checkAndUpdateTrial();
+        // Update countdown every hour
+        setInterval(() => this.checkAndUpdateTrial(), 3600000);
+      },
+
+      getTrialStartDate() {
+        let startDate = localStorage.getItem(this.STORAGE_KEY);
+        if (!startDate) {
+          startDate = new Date().toISOString();
+          localStorage.setItem(this.STORAGE_KEY, startDate);
+        }
+        return new Date(startDate);
+      },
+
+      getDaysRemaining() {
+        const startDate = this.getTrialStartDate();
+        const now = new Date();
+        const diffTime = now - startDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, this.TRIAL_DAYS - diffDays);
+      },
+
+      isExpired() {
+        return this.getDaysRemaining() === 0;
+      },
+
+      lockApplication() {
+        // Disable all inputs
+        const inputs = document.querySelectorAll('input, textarea, select, button');
+        inputs.forEach(input => {
+          input.disabled = true;
+          input.style.cursor = 'not-allowed';
+          input.style.opacity = '0.5';
+        });
+
+        // Disable all clickable elements
+        const clickables = document.querySelectorAll('.btn, .chip, .thumb, .image-input');
+        clickables.forEach(el => {
+          el.style.pointerEvents = 'none';
+          el.style.opacity = '0.5';
+          el.style.cursor = 'not-allowed';
+        });
+
+        // Show expiry overlay
+        this.showExpiryOverlay();
+      },
+
+      showExpiryOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'expiryOverlay';
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.85);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+        `;
+
+        const message = document.createElement('div');
+        message.style.cssText = `
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          text-align: center;
+          max-width: 500px;
+          margin: 20px;
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        `;
+
+        message.innerHTML = `
+          <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+          <h2 style="color: #7f1d1d; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Trial Period has expired</h2>
+          <p style="color: #991b1b; margin: 0; font-size: 18px; line-height: 1.6; font-weight: 600;">
+            Form functionality has been killed.
+          </p>
+          <p style="color: #991b1b; margin: 16px 0 0 0; font-size: 14px;">
+            Contact Faeynix Artifex to continue using this application.
+          </p>
+        `;
+
+        overlay.appendChild(message);
+        document.body.appendChild(overlay);
+      },
+
+      checkAndUpdateTrial() {
+        const daysRemaining = this.getDaysRemaining();
+        const countdownEl = document.getElementById('trialCountdown');
+        
+        if (!countdownEl) return;
+
+        if (daysRemaining === 0) {
+          countdownEl.textContent = 'Trial Expired';
+          countdownEl.className = 'trial-countdown expired';
+          this.lockApplication();
+        } else if (daysRemaining <= 7) {
+          countdownEl.textContent = `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} of form usage left`;
+          countdownEl.className = 'trial-countdown warning';
+        } else {
+          countdownEl.textContent = `${daysRemaining} days of form usage left`;
+          countdownEl.className = 'trial-countdown';
+        }
+      }
+    };
+
+    // ============================================
+    // APP
+    // ============================================
+    const App = {
+      init() {
+        try {
+          console.log('DOM loaded, initializing app...');
+          
+          // Set date to today
+          const dateInput = document.getElementById('date');
+          if (dateInput) {
+            dateInput.value = new Date().toISOString().slice(0, 10);
+            console.log('Date set to today');
+          } else {
+            console.error('Date input not found');
+          }
+
+          this.setupEventListeners();
+          this.setupAutoSave();
+          this.loadAutoSave();
+          this.renderHazardTagsList();
+          this.updateAddNewAreaButton();
+          
+          console.log('App initialization complete');
+        } catch (error) {
+          console.error('App initialization failed:', error);
+          Utils.showError('Failed to initialize application');
+        }
+      },
+
+      setupEventListeners() {
+        try {
+          // Hazard tag management
+          document.getElementById('addHazardTagBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.handleAddHazardTag();
+          });
+          
+          document.getElementById('hazardTagInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              this.handleAddHazardTag();
+            }
+          });
+
+          // Clear validation error on input
+          document.getElementById('hazardTagInput').addEventListener('input', () => {
+            Validation.clearFieldError('hazardTagInput');
+            this.autoSave();
+          });
+
+          // Area management
+          document.getElementById('addNewAreaBtn').addEventListener('click', () => {
+            const input = document.getElementById('newAreaInput');
+            const areaName = input.value.trim();
+            if (areaName) {
+              this.handleAddArea(areaName);
+              input.value = '';
+            } else {
+              input.focus();
+            }
+          });
+
+          document.getElementById('newAreaInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const areaName = e.target.value.trim();
+              if (areaName) {
+                this.handleAddArea(areaName);
+                e.target.value = '';
+              }
+            }
+          });
+
+          // Clear validation error on input
+          document.getElementById('newAreaInput').addEventListener('input', () => {
+            Validation.clearFieldError('newAreaInput');
+            this.autoSave();
+          });
+
+          // Clear all functionality
+          document.getElementById('clearAllBtn').addEventListener('click', async () => {
+            console.log('Clear All button clicked');
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+              console.log('User confirmed clear all');
+              
+              UIState.setButtonLoading('clearAllBtn', true);
+              await Utils.showLoading('Clearing all data...');
+              
+              try {
+                Storage.clear();
+                console.log('LocalStorage cleared, reloading page');
+                
+                location.reload(true);
+              } catch (error) {
+                console.error('Failed to clear data:', error);
+                Utils.showError('Failed to clear all data');
+              } finally {
+                UIState.setButtonLoading('clearAllBtn', false);
+                Utils.hideLoading();
+              }
+            } else {
+              console.log('User cancelled clear all');
+            }
+          });
+
+          // Print dialog
+          this.setupPrintDialog();
+
+          // Save/Load draft
+          this.setupDraftManagement();
+
+        } catch (error) {
+          console.error('Failed to setup event listeners:', error);
+          Utils.showError('Failed to setup application features');
+        }
+      },
+
+      setupPrintDialog() {
+        try {
+          document.getElementById('printBtn').addEventListener('click', () => {
+            document.getElementById('printDialog').style.display = 'flex';
+          });
+
+          document.getElementById('closePrintDialog').addEventListener('click', () => {
+            document.getElementById('printDialog').style.display = 'none';
+          });
+
+          document.getElementById('cancelPrint').addEventListener('click', () => {
+            document.getElementById('printDialog').style.display = 'none';
+          });
+
+          document.getElementById('confirmPrint').addEventListener('click', () => {
+            this.handlePrint();
+          });
+
+          // Close dialog when clicking outside
+          document.getElementById('printDialog').addEventListener('click', (e) => {
+            if (e.target.id === 'printDialog') {
+              document.getElementById('printDialog').style.display = 'none';
+            }
+          });
+        } catch (error) {
+          console.error('Failed to setup print dialog:', error);
+        }
+      },
+
+      setupDraftManagement() {
+        try {
+          document.getElementById('saveDraftBtn').addEventListener('click', async () => {
+            UIState.setButtonLoading('saveDraftBtn', true);
+            await Utils.showLoading('Saving draft...');
+            
+            try {
+              const data = DataManager.serializeForm();
+              DataManager.download(`site-survey-draft-${data.meta.date || 'today'}.json`, JSON.stringify(data, null, 2));
+            } catch (error) {
+              console.error('Save draft failed:', error);
+              Utils.showError('Failed to save draft');
+            } finally {
+              UIState.setButtonLoading('saveDraftBtn', false);
+              Utils.hideLoading();
+            }
+          });
+
+          document.getElementById('loadDraftInput').addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            
+            try {
+              await Utils.showLoading('Loading draft...');
+              const text = await file.text();
+              const data = JSON.parse(text);
+              DataManager.deserializeForm(data);
+              this.autoSave();
+            } catch (err) {
+              console.error('Load draft failed:', err);
+              Utils.showError('Could not load that draft file');
+            } finally {
+              e.target.value = '';
+              Utils.hideLoading();
+            }
+          });
+        } catch (error) {
+          console.error('Failed to setup draft management:', error);
+        }
+      },
+
+      handlePrint() {
+        try {
+          const selectedGrouping = document.querySelector('input[name="printGrouping"]:checked').value;
+          document.getElementById('printDialog').style.display = 'none';
+          
+          const areasContainer = document.getElementById('areasContainer');
+          let originalState = null;
+          
+          if (selectedGrouping === 'hazard') {
+            // Store current area organization
+            originalState = {
+              areas: [...areasContainer.children],
+              areaData: []
+            };
+            
+            // Collect all findings with their area info
+            const allFindings = [];
+            areasContainer.querySelectorAll('.area-card').forEach(areaCard => {
+              const areaName = areaCard.dataset.areaName;
+              const findings = [...areaCard.querySelectorAll('.action-item')];
+              findings.forEach(fs => {
+                // Store area info in finding for restoration
+                fs.dataset.originalArea = areaName;
+                allFindings.push(fs);
+              });
+            });
+            
+            // Clear and reorganize by hazard
+            areasContainer.innerHTML = '';
+            
+            // Group findings by hazard
+            const hazardGroups = {};
+            allFindings.forEach(fs => {
+              const hazard = fs.querySelector('.hazard-tag-select')?.value || 'Unassigned';
+              if (!hazardGroups[hazard]) hazardGroups[hazard] = [];
+              hazardGroups[hazard].push(fs);
+            });
+            
+            // Create hazard sections
+            [...DataManager.hazardTags, ''].forEach(hazard => {
+              const findings = hazardGroups[hazard] || [];
+              if (findings.length === 0) return;
+              
+              // Create hazard divider
+              const divider = document.createElement('div');
+              divider.className = 'hazard-divider';
+              divider.textContent = hazard ? `⚠️ Hazard: ${hazard}` : '🔍 Unassigned Findings';
+              areasContainer.appendChild(divider);
+              
+              // Add findings
+              findings.forEach(fs => areasContainer.appendChild(fs));
+            });
+          }
+          
+          document.activeElement?.blur?.();
+          setTimeout(() => {
+            window.print();
+            
+            // Restore original area organization if needed
+            if (selectedGrouping === 'hazard' && originalState) {
+              areasContainer.innerHTML = '';
+              originalState.areas.forEach(areaCard => areasContainer.appendChild(areaCard));
+            }
+          }, 100);
+        } catch (error) {
+          console.error('Print failed:', error);
+          Utils.showError('Failed to print document');
+        }
+      },
+
+      autoSave() {
+        try {
+          clearTimeout(DataManager.autoSaveTimer);
+          UIState.showSaveStatus('saving', 'Saving...');
+          
+          DataManager.autoSaveTimer = setTimeout(() => {
+            try {
+              const data = DataManager.serializeForm();
+              if (data && Storage.save(data)) {
+                UIState.showSaveStatus('saved', 'All changes saved');
+              } else {
+                UIState.showSaveStatus('error', 'Save failed');
+              }
+            } catch (err) {
+              console.error('Auto-save failed:', err);
+              UIState.showSaveStatus('error', 'Save failed');
+            }
+          }, Storage.AUTOSAVE_DELAY);
+        } catch (error) {
+          console.error('Auto-save setup failed:', error);
+        }
+      },
+
+      setupAutoSave() {
+        try {
+          // Meta fields
+          document.getElementById('site').addEventListener('input', this.autoSave.bind(this));
+          document.getElementById('date').addEventListener('change', this.autoSave.bind(this));
+          
+          // First area input
+          document.getElementById('firstAreaInput').addEventListener('input', this.autoSave.bind(this));
+          
+          // New area input
+          document.getElementById('newAreaInput').addEventListener('input', this.autoSave.bind(this));
+          
+          // Hazard tag input
+          document.getElementById('hazardTagInput').addEventListener('input', this.autoSave.bind(this));
+        } catch (error) {
+          console.error('Failed to setup auto-save:', error);
+        }
+      },
+
+      loadAutoSave() {
+        const saved = Storage.load();
+        if (saved) {
+          DataManager.deserializeForm(saved);
+          UIState.showSaveStatus('saved', 'Previous data restored');
+          setTimeout(() => {
+            document.getElementById('saveStatus').className = 'save-status';
+          }, 3000);
+        }
+      },
+
+      handleAddHazardTag() {
+        try {
+          const hazardTagInput = document.getElementById('hazardTagInput');
+          const name = (hazardTagInput.value || '').trim();
+          
+          // Validate input
+          const validation = Validation.validateInput(name, DataManager.hazardTags, 'hazard tag');
+          if (!validation.isValid) {
+            Utils.showError(validation.error, 'hazardTagInput');
+            hazardTagInput.focus();
+            return;
+          }
+
+          DataManager.hazardTags.push(name);
+          hazardTagInput.value = '';
+          this.updateAllHazardTagSelects();
+          this.renderHazardTagsList();
+          this.autoSave();
+        } catch (error) {
+          console.error('Failed to add hazard tag:', error);
+          Utils.showError('Failed to add hazard tag');
+        }
+      },
+
+      handleAddArea(areaName) {
+        try {
+          // Validate input
+          const validation = Validation.validateInput(areaName, DataManager.areas, 'area');
+          if (!validation.isValid) {
+            Utils.showError(validation.error, 'newAreaInput');
+            document.getElementById('newAreaInput').focus();
+            return;
+          }
+
+          DataManager.areas.push(areaName);
+          const areaCard = this.createAreaCard(areaName);
+          
+          // Add initial finding to the area
+          this.addFindingToArea(areaCard);
+          
+          this.updateAddNewAreaButton();
+          this.autoSave();
+          
+          return areaCard;
+        } catch (error) {
+          console.error('Failed to add area:', error);
+          Utils.showError('Failed to add area');
+        }
+      },
+
+      renderHazardTagsList() {
+        try {
+          const hazardTagsList = document.getElementById('hazardTagsList');
+          if (!DataManager.hazardTags.length) {
+            hazardTagsList.classList.add('hint');
+            hazardTagsList.textContent = 'No hazard tags yet. Add some above to categorize risks.';
+            return;
+          }
+          hazardTagsList.classList.remove('hint');
+          hazardTagsList.innerHTML = '';
+          DataManager.hazardTags.forEach((name) => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            const span = document.createElement('span');
+            span.textContent = name;
+            chip.appendChild(span);
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.title = 'Remove hazard tag';
+            del.textContent = '×';
+            del.addEventListener('click', () => {
+              if (confirm(`Remove hazard tag "${name}"? Findings assigned to it will be set to Unassigned.`)) {
+                DataManager.hazardTags = DataManager.hazardTags.filter(h => h !== name);
+                [...document.querySelectorAll('.hazard-tag-select')].forEach(sel => {
+                  if (sel.value === name) sel.value = '';
+                });
+                this.updateAllHazardTagSelects();
+                this.renderHazardTagsList();
+                this.autoSave();
+              }
+            });
+            chip.appendChild(del);
+            hazardTagsList.appendChild(chip);
+          });
+        } catch (error) {
+          console.error('Failed to render hazard tags list:', error);
+        }
+      },
+
+      updateAllHazardTagSelects() {
+        try {
+          [...document.querySelectorAll('.hazard-tag-select')].forEach(select => {
+            this.populateHazardTagSelect(select);
+          });
+        } catch (error) {
+          console.error('Failed to update hazard tag selects:', error);
+        }
+      },
+
+      populateHazardTagSelect(selectEl) {
+        try {
+          const current = selectEl.value;
+          selectEl.innerHTML = '<option value="">Unassigned</option>' + 
+            DataManager.hazardTags.map(h => `<option>${Utils.escapeHtml(h)}</option>`).join('');
+          if (DataManager.hazardTags.includes(current)) selectEl.value = current;
+        } catch (error) {
+          console.error('Failed to populate hazard tag select:', error);
+        }
+      },
+
+      createAreaCard(areaName) {
+        try {
+          const container = document.getElementById('areasContainer');
+          const tpl = document.getElementById('areaCardTemplate');
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = tpl.innerHTML.trim();
+          const areaCard = wrapper.firstElementChild;
+          
+          areaCard.dataset.areaName = areaName;
+          areaCard.querySelector('.area-name').textContent = areaName;
+          
+          // Add finding to area button
+          areaCard.querySelector('.add-finding-to-area-btn').addEventListener('click', () => {
+            this.addFindingToArea(areaCard);
+          });
+          
+          // Toggle collapse/expand functionality
+          const toggleBtn = areaCard.querySelector('.area-toggle-btn');
+          const collapseBtn = areaCard.querySelector('.collapse-area-btn');
+          
+          toggleBtn.addEventListener('click', () => {
+            if (areaCard.classList.contains('collapsed')) {
+              areaCard.classList.remove('collapsed');
+              toggleBtn.textContent = '▲';
+              toggleBtn.title = 'Collapse area';
+            } else {
+              areaCard.classList.add('collapsed');
+              toggleBtn.textContent = '▼';
+              toggleBtn.title = 'Expand area';
+            }
+          });
+          
+          collapseBtn.addEventListener('click', () => {
+            areaCard.classList.add('collapsed');
+            toggleBtn.textContent = '▼';
+            toggleBtn.title = 'Expand area';
+          });
+          
+          // Remove area functionality
+          areaCard.querySelector('.remove-area-btn').addEventListener('click', () => {
+            if (confirm(`Remove area "${areaName}" and all its findings?`)) {
+              DataManager.areas = DataManager.areas.filter(a => a !== areaName);
+              areaCard.remove();
+              this.updateAddNewAreaButton();
+              this.autoSave();
+            }
+          });
+          
+          container.appendChild(areaCard);
+          return areaCard;
+        } catch (error) {
+          console.error('Failed to create area card:', error);
+          Utils.showError('Failed to create area');
+        }
+      },
+
+      addFindingToArea(areaCard) {
+        try {
+          const findingsContainer = areaCard.querySelector('.findings-container');
+          const finding = this.createFindingElement();
+          findingsContainer.appendChild(finding);
+          this.renumberFindingsInArea(findingsContainer);
+          this.autoSave();
+        } catch (error) {
+          console.error('Failed to add finding to area:', error);
+          Utils.showError('Failed to add finding');
+        }
+      },
+
+      createFindingElement(prefill = {}) {
+        try {
+          const tpl = document.getElementById('actionItemTemplate');
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = tpl.innerHTML.trim();
+          const fieldset = wrapper.firstElementChild;
+          
+          // Set up priority
+          const prioritySel = fieldset.querySelector('select.priority');
+          prioritySel.value = prefill.priority || 'N/A';
+          this.setPriorityColor(prioritySel);
+          prioritySel.addEventListener('change', (e) => {
+            this.setPriorityColor(e.target);
+            this.autoSave();
+          });
+          
+          // Set up hazard tag select
+          const hazardTagSel = fieldset.querySelector('.hazard-tag-select');
+          this.populateHazardTagSelect(hazardTagSel);
+          hazardTagSel.addEventListener('change', this.autoSave.bind(this));
+          if (prefill.hazardTag && DataManager.hazardTags.includes(prefill.hazardTag)) {
+            hazardTagSel.value = prefill.hazardTag;
+          }
+          
+          // Auto-save on all inputs
+          const inputs = fieldset.querySelectorAll('input, textarea, select');
+          inputs.forEach(input => {
+            input.addEventListener('input', this.autoSave.bind(this));
+            input.addEventListener('change', this.autoSave.bind(this));
+          });
+          
+          // Image handling
+          this.setupImageHandling(fieldset);
+          
+          // Action buttons
+          fieldset.querySelector('.removeActionBtn').addEventListener('click', () => {
+            if (confirm('Remove this significant finding?')) {
+              fieldset.remove();
+              this.autoSave();
+            }
+          });
+          
+          fieldset.querySelector('.move-up').addEventListener('click', () => {
+            const prev = fieldset.previousElementSibling;
+            if (prev && prev.classList.contains('action-item')) {
+              fieldset.parentNode.insertBefore(fieldset, prev);
+              this.renumberFindingsInArea(fieldset.parentNode);
+              this.autoSave();
+            }
+          });
+          
+          fieldset.querySelector('.move-down').addEventListener('click', () => {
+            const next = fieldset.nextElementSibling;
+            if (next && next.classList.contains('action-item')) {
+              fieldset.parentNode.insertBefore(next, fieldset);
+              this.renumberFindingsInArea(fieldset.parentNode);
+              this.autoSave();
+            }
+          });
+          
+          // Prefill data
+          if (prefill.location) fieldset.querySelector('[name="location"]').value = prefill.location;
+          if (prefill.finding) fieldset.querySelector('[name="finding"]').value = prefill.finding;
+          if (prefill.actions) fieldset.querySelector('[name="actions"]').value = prefill.actions;
+          
+          // Add images
+          if (prefill.images && prefill.images.length > 0) {
+            const imageGrid = fieldset.querySelector('.image-grid');
+            prefill.images.forEach(url => UIState.addImageThumb(imageGrid, url));
+          }
+          
+          return fieldset;
+        } catch (error) {
+          console.error('Failed to create finding element:', error);
+          Utils.showError('Failed to create finding');
+        }
+      },
+
+      setupImageHandling(fieldset) {
+        try {
+          const imageInput = fieldset.querySelector('.image-input');
+          const imageGrid = fieldset.querySelector('.image-grid');
+          
+          imageInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files || []);
+            for (const file of files) {
+              try {
+                const dataUrl = await ImageProcessor.readAndCompressImage(file);
+                UIState.addImageThumb(imageGrid, dataUrl);
+                this.autoSave();
+              } catch (err) {
+                console.error('Image read failed', err);
+                Utils.showError('Could not read one of the images.');
+              }
+            }
+            e.target.value = '';
+          });
+        } catch (error) {
+          console.error('Failed to setup image handling:', error);
+        }
+      },
+
+      setPriorityColor(selectEl) {
+        try {
+          selectEl.dataset.level = selectEl.value || 'N/A';
+        } catch (error) {
+          console.error('Failed to set priority color:', error);
+        }
+      },
+
+      renumberFindingsInArea(container) {
+        try {
+          [...container.querySelectorAll('.action-item')].forEach((fs, i) => {
+            const numberSpan = fs.querySelector('.action-number');
+            if (numberSpan) numberSpan.textContent = i + 1;
+          });
+        } catch (error) {
+          console.error('Failed to renumber findings:', error);
+        }
+      },
+
+      updateAddNewAreaButton() {
+        try {
+          const container = document.getElementById('areasContainer');
+          const addAreaBtn = document.getElementById('addNewAreaBtn');
+          
+          // Always keep the initial area input hidden - use the main add area section
+          document.getElementById('initialAreaInput').style.display = 'none';
+          addAreaBtn.style.display = 'inline-flex';
+        } catch (error) {
+          console.error('Failed to update add area button:', error);
+        }
+      }
+    };
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check trial status first
+      TrialManager.init();
+      
+      // Only initialize app if trial is not expired
+      if (!TrialManager.isExpired()) {
+        App.init();
+        
+        // Auto-save on page unload
+        window.addEventListener('beforeunload', () => {
+          Storage.save(DataManager.serializeForm());
+        });
+      }
+    });
+
+    // Handle potential module loading errors
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+      Utils.showError('An unexpected error occurred');
+    });
+
+    // Export for potential debugging
+    window.FireRiskApp = {
+      App,
+      Utils,
+      Storage,
+      ImageProcessor,
+      Validation,
+      UIState,
+      DataManager,
+      TrialManager
+    };
+  </script>
+</body>
+</html>
